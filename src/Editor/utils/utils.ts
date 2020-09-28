@@ -1,5 +1,5 @@
 import Immutable from 'immutable';
-import { TypeProps, HEADER_TYPES } from './blockTypes';
+import { TypeProps, HEADER_TYPES, INLINE_TYPES } from './blockTypes';
 
 const GeneratorRenderMap = (types: TypeProps[]) => {
   let result: any = {};
@@ -15,7 +15,8 @@ const GeneratorRenderMap = (types: TypeProps[]) => {
 const MergeTypes = () => {
   const temp: TypeProps[] = [];
   return temp.concat(
-    HEADER_TYPES
+    HEADER_TYPES,
+    INLINE_TYPES
   )
 }
 
