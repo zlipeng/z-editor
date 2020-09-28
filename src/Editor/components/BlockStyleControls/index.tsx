@@ -1,12 +1,26 @@
 import React, { FC, useState } from 'react';
 import { Button, Select } from 'antd';
-import { InfoCircleOutlined, UnorderedListOutlined, OrderedListOutlined } from '@ant-design/icons';
+import {
+  InfoCircleOutlined,
+  UnorderedListOutlined,
+  OrderedListOutlined,
+  ItalicOutlined,
+  BoldOutlined,
+  UnderlineOutlined
+} from '@ant-design/icons';
 import './index.css';
-import { HEADER_TYPES, BLOCK_TYPES } from '../../utils/blockTypes';
+import {
+  HEADER_TYPES,
+  BLOCK_TYPES,
+  TypeProps,
+  INLINE_TYPES,
+  COLORS_TYPES,
+  FONTS_TYPES
+} from '../../utils/blockTypes';
 
 const { Option } = Select;
 
-interface StyleButtonProps {
+interface StyleButtonProps extends TypeProps {
   onToggle: (e: string) => void;
   style: string;
   active: boolean;
@@ -20,9 +34,9 @@ const StyleButton: FC<StyleButtonProps> = props => {
     onToggle(style);
   };
 
-  let className = 'RichEditor-styleButton';
+  let className = '';
   if (active) {
-    className += ' RichEditor-activeButton';
+    className += 'z-activeButton';
   }
 
   const getIcon = () => {
@@ -33,6 +47,12 @@ const StyleButton: FC<StyleButtonProps> = props => {
         return <UnorderedListOutlined />;
       case 'OrderedListOutlined':
         return <OrderedListOutlined />;
+      case 'BoldOutlined':
+        return <BoldOutlined />;
+      case 'ItalicOutlined':
+        return <ItalicOutlined />;
+      case 'UnderlineOutlined':
+        return <UnderlineOutlined />;
       default:
         break;
     }
@@ -45,8 +65,17 @@ const StyleButton: FC<StyleButtonProps> = props => {
   )
 }
 
-const BlockStyleControls = (props: { onToggle?: any; editorState?: any; }) => {
+interface BlockControlsProps {
+  onToggleInline: (e: any) => void;
+  onToggleBlock: (e: any) => void;
+  onToggleFont: (e: any) => void;
+  editorState: any;
+}
+
+const BlockStyleControls = (props: BlockControlsProps) => {
+  const { onToggleBlock, onToggleInline, onToggleFont } = props;
   const [headMenuTitle, setHeadMenuTitle] = useState('正文');
+  const [fontSize, setFontSize] = useState(12);
   const {editorState} = props;
   const selection = editorState.getSelection();
   const blockType = editorState
@@ -54,9 +83,18 @@ const BlockStyleControls = (props: { onToggle?: any; editorState?: any; }) => {
     .getBlockForKey(selection.getStartKey())
     .getType();
 
+  const currentStyle = editorState.getCurrentInlineStyle();
+
+  console.log(currentStyle)
+
   const onSelectChange = (value: any) => {
-    props.onToggle(value)
+    onToggleBlock(value)
     setHeadMenuTitle(value)
+  }
+
+  const onFontChange = (value: number) => {
+    onToggleFont(`font${value}`)
+    setFontSize(value)
   }
 
   const headerMenus = (
@@ -69,21 +107,52 @@ const BlockStyleControls = (props: { onToggle?: any; editorState?: any; }) => {
     </Select>
   )
 
+  const fontMenus = (
+    <Select onChange={onFontChange} value={fontSize} bordered={false}>
+      {FONTS_TYPES.map((type) =>
+        <Option value={type} key={type}>
+          {type}px
+        </Option>
+      )}
+    </Select>
+  )
+
   return (
     <div className="RichEditor-controls">
       <div className="toolbar-area header-area">
         {headerMenus}
+        {fontMenus}
       </div>
       <div className="toolbar-area">
         {BLOCK_TYPES.map((type) =>
           <StyleButton
             key={type.label}
             active={type.style === blockType}
-            onToggle={props.onToggle}
+            onToggle={onToggleBlock}
             {...type}
           />
         )}
       </div>
+      <div className="toolbar-area">
+        {INLINE_TYPES.map((type) =>
+          <StyleButton
+            key={type.label}
+            active={currentStyle.has(type.style)}
+            onToggle={onToggleInline}
+            {...type}
+          />
+        )}
+      </div>
+      {/* <div className="toolbar-area">
+        {COLORS_TYPES.map((type) =>
+          <StyleButton
+            key={type.label}
+            active={currentStyle.has(type.style)}
+            onToggle={onToggleFont}
+            {...type}
+          />
+        )}
+      </div> */}
     </div>
   );
 };
